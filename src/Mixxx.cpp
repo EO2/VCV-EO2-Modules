@@ -97,9 +97,7 @@ struct Mixxx : Module {
 	};
 
 
-	Mixxx() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS) {
-		//reset();
-	}
+	Mixxx() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
 	void step() override;
 	
 	//SchmittTrigger ch1mute;
@@ -125,7 +123,7 @@ struct Mixxx : Module {
 	}
 
 	void fromJson(json_t *json) override {
-		json_t *mute = json_object_get(json, 'MixxxMute');
+		json_t *mute = json_object_get(json, "MixxxMute");
 		
 		json_t *m1 = json_array_get(mute, 0);
 		json_t *m2 = json_array_get(mute, 1);
@@ -134,10 +132,6 @@ struct Mixxx : Module {
 		ch2m = !!json_integer_value(m2);
 	}*/
 };
-
-//Mixxx::Mixxx() : Module(NUM_PMS, NUM_INS, NUM_OUTS) {
-//	reset();
-//}
 
 
 void Mixxx::step() {
@@ -151,41 +145,34 @@ void Mixxx::step() {
 	outputs[CH1_OUT].value = ch1;
 	outputs[CH2_OUT].value = ch2;
 	outputs[MIX_OUT].value = mix;
+
+	// lights
+	lights[VU_LIGHT].value = mix;
 }
 
 
-struct MixxxWidget : ModuleWidget {
-	MixxxWidget(Mixxx *module);
-};
+MixxxWidget::MixxxWidget() {
+	Mixxx *module = new Mixxx();
+	setModule(module);
+	box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
-// either pass module, or create in here..
-// MixxxWidget() { Mixxx *module = new Mixxx(); setModule(module); //... }
+	{
+		SVGPanel *panel = new SVGPanel();
+		panel->box.size = box.size;
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Mixxx.svg")));
+		addChild(panel);
+	}
 
-MixxxWidget::MixxxWidget(Mixxx *module) : ModuleWidget(module) {
+	addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+	addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-	setPanel(SVG::load(assetPlugin(plugin, 'res/Mixxx.svg')));
+	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, Mixxx::MIX_P, -3.0, 3.0, 0.0));
 
-	addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
-	addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
-	addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
-	/*
+	addInput(createInput<PJ301MPort>(Vec(33, 186), module, Mixxx::CV_MIX_VOL_IN));
 
-	addParam(ParamWidget::create<RoundLargeBlackKnob>(Vec(52, 58), module, Mixxx::MIX_P, 0.0f, 1.0f, 0.5f));
-	addParam(ParamWidget::create<RoundBlackKnob>(Vec(57, 139), module, Mixxx::CH1_P, 0.0f, 1.0f, 0.0f));
-	addParam(ParamWidget::create<RoundBlackKnob>(Vec(57, 219), module, Mixxx::CH2_P, 0.0f, 1.0f, 0.0f));
-	addParam(ParamWidget::create<RoundBlackKnob>(Vec(57, 300), module, Mixxx::CH3_P, 0.0f, 1.0f, 0.0f));
+	addOutput(createOutput<PJ301MPort>(Vec(33, 275), module, Mixxx::MIX_OUT));
 
-	addInput(Port::create<PJ301MPort>(Vec(16, 69), Port::INPUT, module, Mixxx::MIX_CV_IN));
-	addInput(Port::create<PJ301MPort>(Vec(22, 129), Port::INPUT, module, Mixxx::CH1_IN));
-	addInput(Port::create<PJ301MPort>(Vec(22, 160), Port::INPUT, module, Mixxx::CH1_CV_IN));
-
-addOutput(Port::create<PJ301MPort>(Vec(110, 69), Port::OUTPUT, module, Mixxx::MIX_OUT));
-
-	addOutput(Port::create<PJ301MPort>(Vec(110, 145), Port::OUTPUT, module, Mixxx::CH1_OUTPUT));
-	addOutput(Port::create<PJ301MPort>(Vec(110, 225), Port::OUTPUT, module, Mixxx::CH2_OUTPUT));
-	*/
+	addChild(createLight<MediumLight<RedLight>>(Vec(41, 59), module, Mixxx::VU_LIGHT));
 }
-
-
-Model *modelMixxx = Model::create<Mixxx, MixxxWidget>('EO2', 'Mixxx', 'Hardcore Mixxx', MIXER_TAG, AMPLIFIER_TAG);

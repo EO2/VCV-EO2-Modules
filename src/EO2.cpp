@@ -8,13 +8,8 @@ void init(rack::Plugin *p) {
 	plugin = p;
 	p->slug = TOSTRING(SLUG);
 	p->version = TOSTRING(VERSION);
+	p->website = "https://github.com/EO2/VCV-EO2-Modules";
+	p->manual = "https://github.com/EO2/VCV-EO2-Modules/blob/master/README.md";
 
-	p->addModel(modelMixxx); 
-
-
-	/* 'createModel' here or in Module?
-	p->addModel(createModel<BraidsWidget>("Audible Instruments", "Braids", "Macro Oscillator", OSCILLATOR_TAG, WAVESHAPER_TAG));
-	// Any other plugin initialization may go here.
-	// As an alternative, consider lazy-loading assets and lookup tables when your module is created to reduce startup times of Rack.
-	*/
+	p->addModel(createModel<MixxxWidget>("EO2", "Mixxx", "Hardcore Mixxx", MIXER_TAG, AMPLIFIER_TAG));
 }

@@ -7,5 +7,8 @@ using namespace rack;
 extern Plugin *plugin;
 
 
-extern Model *modelMixxx;
-// extern Model *modelMyModule;
+// Module Widgets
+
+struct MixxxWidget : ModuleWidget {
+	MixxxWidget();
+};
