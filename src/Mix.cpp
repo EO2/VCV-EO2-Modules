@@ -1,7 +1,7 @@
 #include "EO2.hpp"
 
 
-struct Mixxx : Module {
+struct Mix : Module {
 	enum ParamIds {
 		MIX_P,
 		CH1_P,
@@ -97,7 +97,7 @@ struct Mixxx : Module {
 	};
 
 
-	Mixxx() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
+	Mix() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
 	void step() override;
 	
 	//SchmittTrigger ch1mute;
@@ -123,7 +123,7 @@ struct Mixxx : Module {
 	}
 
 	void fromJson(json_t *json) override {
-		json_t *mute = json_object_get(json, "MixxxMute");
+		json_t *mute = json_object_get(json, "MixMute");
 		
 		json_t *m1 = json_array_get(mute, 0);
 		json_t *m2 = json_array_get(mute, 1);
@@ -134,8 +134,11 @@ struct Mixxx : Module {
 };
 
 
-void Mixxx::step() {
+void Mix::step() {
+	//todo: fix missing clamp
+	//https://developer.gnome.org/glib/stable/glib-Standard-Macros.html#CLAMP:CAPS
 	#define clamp(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+
 	float ch1 = inputs[CH1_IN].value * params[CH1_P].value * clamp(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
 	float ch2 = inputs[CH2_IN].value * params[CH2_P].value * clamp(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
 	float cv1_vol = fmaxf(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f);
@@ -151,15 +154,15 @@ void Mixxx::step() {
 }
 
 
-MixxxWidget::MixxxWidget() {
-	Mixxx *module = new Mixxx();
+MixWidget::MixWidget() {
+	Mix *module = new Mix();
 	setModule(module);
 	box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
 	{
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Mixxx.svg")));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Mix.svg")));
 		addChild(panel);
 	}
 
@@ -168,11 +171,11 @@ MixxxWidget::MixxxWidget() {
 	addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, Mixxx::MIX_P, -3.0, 3.0, 0.0));
+	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, Mix::MIX_P, -3.0, 3.0, 0.0));
 
-	addInput(createInput<PJ301MPort>(Vec(33, 186), module, Mixxx::CV_MIX_VOL_IN));
+	addInput(createInput<PJ301MPort>(Vec(33, 186), module, Mix::CV_MIX_VOL_IN));
 
-	addOutput(createOutput<PJ301MPort>(Vec(33, 275), module, Mixxx::MIX_OUT));
+	addOutput(createOutput<PJ301MPort>(Vec(33, 275), module, Mix::MIX_OUT));
 
-	addChild(createLight<MediumLight<RedLight>>(Vec(41, 59), module, Mixxx::VU_LIGHT));
+	addChild(createLight<MediumLight<RedLight>>(Vec(41, 59), module, Mix::VU_LIGHT));
 }

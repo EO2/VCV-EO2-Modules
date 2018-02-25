@@ -11,5 +11,5 @@ void init(rack::Plugin *p) {
 	p->website = "https://github.com/EO2/VCV-EO2-Modules";
 	p->manual = "https://github.com/EO2/VCV-EO2-Modules/blob/master/README.md";
 
-	p->addModel(createModel<MixxxWidget>("EO2", "Mixxx", "Hardcore Mixxx", MIXER_TAG, AMPLIFIER_TAG));
+	p->addModel(createModel<MixWidget>("EO2", "Mix", "Mixer", MIXER_TAG, AMPLIFIER_TAG));
 }
