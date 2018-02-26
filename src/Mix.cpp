@@ -1,113 +1,82 @@
 #include "EO2.hpp"
+#include "rack.hpp"
 
+#define nCHANNELS 16
+#define nAUX 4
+#define nBUS 4
 
 struct Mix : Module {
 	enum ParamIds {
-		MIX_P,
-		CH1_P,
-		CH2_P,
-		CH3_P,
-		CH4_P,
-		AUX1_P,
-		AUX2_P,
-		AUX3_P,
-		AUX4_P,
-		VOLUME_P,
-		BALANCE_P,
-		MUTE_P,
-		SOLO_P,
-		SEND_P,
-		RECEIVE_P,
-		VU_P,
-		GROUP_P,
-		NUM_PARAMS
+		MIX_VOL,
+		VOL, // 18, 20  // VOL_POT VOL[nCHANNELS]
+		PAN,
+		MUTE,
+		SOLO,
+		SEND1, // SENDS 1-4+ * 16
+		SEND2,
+		SEND3,
+		SEND4,
+		RECEIVE, // 1-4 total
+		BUS1, // BUSES / GROUPS
+		BUS2,
+		BUS3,
+		BUS4,
+		nPARAMS
 	};
 	enum InputIds {
-		CH1_IN,
-		CH2_IN,
-		CH3_IN,
-                CH4_IN,
-                CH5_IN,
-                CH6_IN,
-                CH7_IN,
-                CH8_IN,
-                CH9_IN,
-                CH10_IN,
-                CH11_IN,
-                CH12_IN,
-                CH13_IN,
-                CH14_IN,
-                CH15_IN,
-                CH16_IN,
-		AUX1_IN, // L + R ?
-		AUX2_IN,
-		AUX3_IN,
-		AUX4_IN,
-		CV1_VOL_IN,
-		CV1_BAL_IN,
-		CV1_MUT_IN,
-		CV1_SOL_IN,
-		CV1_AUX1_IN, // CH1 Send1
-		CV1_AUX2_IN,
-		CV1_AUX3_IN,
-		CV1_AUX4_IN,
-		CV_MIX_VOL_IN,
-		LINK_IN,
-		NUM_INPUTS
+		CH_IN,  // 16
+		AUX_IN, // 4
+		LINK_IN,// 2
+		CV_VOL, // 1
+		CV_PAN, // 1
+		CV_AUX, // 4
+		nINPUTS
 	};
 	enum OutputIds {
-		MIX_OUT,
-		L_OUT,
-		R_OUT,
-                CH1_OUT,
-                CH2_OUT,
-                CH3_OUT,
-                CH4_OUT,
-                CH5_OUT,
-                CH6_OUT,
-                CH7_OUT,
-                CH8_OUT,
-                CH9_OUT,
-                CH10_OUT,
-                CH11_OUT,
-                CH12_OUT,
-                CH13_OUT,
-                CH14_OUT,
-                CH15_OUT,
-                CH16_OUT,
-                AUX1_OUT,
-                AUX2_OUT,
-                AUX3_OUT,
-                AUX4_OUT,
-		L_REC_OUT,
-		R_REC_OUT,
-		L_MON_OUT,
-		R_MON_OUT,
-		BUS1_OUT,
-		BUS2_OUT,
-		BUS3_OUT,
-		BUS4_OUT,
-		LINK_OUT,
-		NUM_OUTPUTS
+		MIX_OUT, 	//2
+		CH_OUT, 	//2,4 // 16,18
+		AUX_OUT, 	//4
+		BUS_OUT, 	//4
+		LINK_OUT, //2
+		nOUTPUTS
 	};
 	enum LightIds {
-		VU_LIGHT,
+		VU_LIGHT,	// 1
 		MUTE_LIGHT,
-		NUM_LIGHTS
+		nLIGHTS
 	};
 
 
-	Mix() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
+	Mix() : Module(nPARAMS, nINPUTS, nOUTPUTS, nLIGHTS) {}
 	void step() override;
-	
-	//SchmittTrigger ch1mute;
-	//SchmittTrigger ch2mute;
 
-	float ch1m = false;
-	float ch2m = false;
+	/*
+	for (var i = 0; i < lengthOf(CH_IN); i++) {
+		VOL[i] = 0.0f;
+		PAN[i] = 0.5f;
+		MUTE[i] = false;
+		SOLO[i] = false;
+		SEND1[i] = 0.0f; // for (1-4) do
+		SEND2[i] = 0.0f;
+		SEND3[i] = 0.0f;
+		SEND4[i] = 0.0f;
+		BUS1[i] = false;
+		BUS2[i] = false;
+		BUS3[i] = false;
+		BUS4[i] = false;
+	}
+
+	bool	bMuteStates[ nCHANNELS ] = {};
+	bool  bSoloStates[ nCHANNELS ] = {};
 
 	float mixL = 0.0f;
 	float mixR = 0.0f;
+
+	float aux1_receive = 0.0f;
+	float aux2_receive = 0.0f;
+	float aux3_receive = 0.0f;
+	float aux4_receive = 0.0f;
+*/
 	/*
 	json_t *toJson() override {
 		json_t *json = json_object();
@@ -121,7 +90,6 @@ struct Mix : Module {
 
 		return json;
 	}
-
 	void fromJson(json_t *json) override {
 		json_t *mute = json_object_get(json, "MixMute");
 		
@@ -135,29 +103,33 @@ struct Mix : Module {
 
 
 void Mix::step() {
-	//todo: fix missing clamp
 	//https://developer.gnome.org/glib/stable/glib-Standard-Macros.html#CLAMP:CAPS
 	#define clamp(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+/*
+	// Channels
+	for (var i = 0; i < lengthOf(CH_IN); i++) {
+		// Inputs
+		float ch = inputs[CH_IN[i]].value * params[CH1_P].value * clamp(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
 
-	float ch1 = inputs[CH1_IN].value * params[CH1_P].value * clamp(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
-	float ch2 = inputs[CH2_IN].value * params[CH2_P].value * clamp(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
-	float cv1_vol = fmaxf(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f);
+		// Outputs
+		outputs[CH_OUT[i]].value = ch;
+	}
+
+	// Main Out
+	//float cv1_vol = fmaxf(inputs[CV1_VOL_IN].normalize(10.0f) / 10.0f, 0.0f);
 	float cv_mix_vol = fmaxf(inputs[CV_MIX_VOL_IN].normalize(10.0f) / 10.0f, 0.0f);
-	float mix = (ch1 + ch2) * params[MIX_P].value * cv_mix_vol;
-
-	outputs[CH1_OUT].value = ch1;
-	outputs[CH2_OUT].value = ch2;
+	float mix = (ch1 + ch2) * params[MIX_P].value * cv_mix_vol; // ch ch[i]
 	outputs[MIX_OUT].value = mix;
 
-	// lights
 	lights[VU_LIGHT].value = mix;
+*/
 }
 
 
 MixWidget::MixWidget() {
 	Mix *module = new Mix();
 	setModule(module);
-	box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+	box.size = Vec(18 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
 	{
 		SVGPanel *panel = new SVGPanel();
@@ -166,16 +138,29 @@ MixWidget::MixWidget() {
 		addChild(panel);
 	}
 
-	addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+	//todo: SVGKnob, SVGSlider, SVGSwitch, SVGPort, SVGScrew, (SVGPanel), etc..  all in one svg, named? SpriteKnob..
 
-	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, Mix::MIX_P, -3.0, 3.0, 0.0));
+	// Channels 
+	
+	for (int i = 0; i < 16; i++) {
+		addInput(createInput<EO2_Port>(Vec(RACK_GRID_WIDTH/3, RACK_GRID_WIDTH/2), module, Mix::CH_IN));
 
-	addInput(createInput<PJ301MPort>(Vec(33, 186), module, Mix::CV_MIX_VOL_IN));
+		addInput(createInput<EO2_Port>(Vec(RACK_GRID_WIDTH/3, RACK_GRID_WIDTH*2), module, Mix::CH_IN));
+		addInput(createInput<EO2_Port>(Vec(RACK_GRID_WIDTH/3, RACK_GRID_WIDTH*2.5), module, Mix::CH_IN));
+		addInput(createInput<EO2_Port>(Vec(RACK_GRID_WIDTH/3, RACK_GRID_WIDTH*3), module, Mix::CH_IN));
 
-	addOutput(createOutput<PJ301MPort>(Vec(33, 275), module, Mix::MIX_OUT));
+		addParam(createParam<EO2_RedKnob>(Vec(1.5, RACK_GRID_WIDTH*4), module, Mix::CV_VOL, -0.1, 1.0, 0.0)); // gain..
+		addParam(createParam<EO2_GreenKnob>(Vec(1.5, RACK_GRID_WIDTH*5), module, Mix::CV_VOL, -0.1, 1.0, 0.0));
+		addParam(createParam<EO2_BlueKnob>(Vec(1.5, RACK_GRID_WIDTH*6), module, Mix::CV_PAN, -0.1, 1.0, 0.0));
 
-	addChild(createLight<MediumLight<RedLight>>(Vec(41, 59), module, Mix::VU_LIGHT));
+		addParam(createParam<EO2_RedKnob>(Vec(1.5, RACK_GRID_WIDTH*8), module, Mix::CV_AUX, -0.1, 1.0, 0.0));
+		addParam(createParam<EO2_GreenKnob>(Vec(1.5, RACK_GRID_WIDTH*9), module, Mix::CV_AUX, -0.1, 1.0, 0.0));
+		addParam(createParam<EO2_BlueKnob>(Vec(1.5, RACK_GRID_WIDTH*10), module, Mix::CV_AUX, -0.1, 1.0, 0.0));
+		addParam(createParam<EO2_YellowKnob>(Vec(1.5, RACK_GRID_WIDTH*11), module, Mix::CV_AUX, -0.1, 1.0, 0.0));
+
+		addParam(createParam<EO2_RedKnob>(Vec(1.5, RACK_GRID_WIDTH*14), module, Mix::MIX_VOL, -0.1, 1.0, 0.0));
+	}
+	
+	// Master
+	//addParam(createParam<EO2_RedKnob>(Vec(1.5, RACK_GRID_WIDTH*14), module, Mix::MIX_VOL, -0.1, 1.0, 0.0));
 }

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg viewBox="0 0 270 380" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+<svg viewBox="0 0 30 380" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
   <defs>
     <bx:grid x="0" y="0" width="15" height="19"/>
     <pattern id="pattern-0" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse" viewBox="0 0 100 100">
       <rect x="0" y="0" width="50" height="100" style="fill: black;"/>
     </pattern>
   </defs>
-  <rect width="270" height="380" style="fill: rgb(152, 143, 143); pointer-events: none;">
-    <title>Mix-module</title>
+  <rect width="30" height="380" style="fill: rgb(152, 143, 143);">
+    <title>Multi-module</title>
   </rect>
 </svg>

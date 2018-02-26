@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 13 13.5" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="0" y="0" width="15" height="15"/>
+  </defs>
+  <ellipse transform="matrix(1, -0.000064, 0.000068, 1.000001, -70.179299, -415.861515)" cx="76.651" cy="422.866" rx="6" ry="6" style="fill: rgb(169, 169, 169); stroke: rgb(111, 23, 23);">
+    <title>Amp-dial</title>
+  </ellipse>
+  <line x1="6.5" y1="0" x2="6.5" y2="5" style="stroke: rgb(111, 23, 23); fill: none;">
+    <title>Amp-indicator</title>
+  </line>
+</svg>

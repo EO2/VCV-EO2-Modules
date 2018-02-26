@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 5 5" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="0" y="0" width="15" height="15"/>
+  </defs>
+  <ellipse transform="matrix(1.000001, 0.000085, -0.000085, 1, -13.499695, -36.529149)" cx="16.006" cy="39.028" rx="2.5" ry="2.5" style="fill: rgb(98, 98, 98);" bx:origin="0.499 0.5">
+    <title>Port</title>
+  </ellipse>
+</svg>

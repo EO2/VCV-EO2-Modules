@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 11 57" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:grid x="0" y="0" width="15" height="15"/>
+  </defs>
+  <line style="fill: rgb(34, 34, 34); stroke: rgb(51, 51, 51);" x1="5.5" y1="0" x2="5.5" y2="57">
+    <title>Slider-bg</title>
+  </line>
+  <g transform="matrix(0.974659, 0, 0, 1, -2.170566, -265.999481)" style="visibility: hidden;">
+    <title>Slider-knob</title>
+    <rect x="2.74" y="285" width="10" height="15" style="fill: rgb(169, 169, 169); stroke: rgb(110, 110, 110);"/>
+    <line x1="2.939" y1="292.819" x2="13" y2="292.819" style="fill: none; stroke: rgb(110, 110, 110);"/>
+  </g>
+</svg>
